@@ -3,23 +3,23 @@ main application and routing logic for  TwitOff
 """
 import os
 from pickle import loads, dumps
-# import redis
+import redis
 from decouple import config
 from flask import Flask, render_template, request
 from .predict import predict_user
 from .model import DB, User
 from .twitter import add_or_update_user
 
-# if config('ENV') == 'production':
-#     CAHCE = redis.from_url(os.environ.get("REDIS_URL"))
-# else:
-#     CAHCE = None
+if config('ENV') == 'production':
+    CACHE = redis.from_url(os.environ.get("REDIS_URL"))
+else:
+    CACHE = None
 
-# try:
-#     CACHE.exists('comparisons')
-#     CAHCED_COMPARISONS = loads(CACHE.get)
-# except AttributeError:
-#     CACHED_COMPARISONs = set()
+try:
+    CACHE.exists('comparisons')
+    CAHCED_COMPARISONS = loads(CACHE.get)
+except AttributeError:
+    CACHED_COMPARISONs = set()
 
 def create_app():
     """
@@ -37,14 +37,14 @@ def create_app():
         users = User.query.all()
         return render_template('base.html', title='Home', users=users)
 
-    # @app.route("/update")
-    # def update():
-    #     if config('ENV') == 'production':
-    #         CACHE.flushall()
-    #         CAHCED_COMPARISONS.clear()
-    #     update_all_users()
-    #     return render_template('base.html', users=User.query.all(),
-    #                            title='Cache cleared and all tweets updated')
+    @app.route("/update")
+    def update():
+        if config('ENV') == 'production':
+            CACHE.flushall()
+            CAHCED_COMPARISONS.clear()
+        update_all_users()
+        return render_template('base.html', users=User.query.all(),
+                               title='Cache cleared and all tweets updated')
 
     
     @app.route('/user', methods=['POST'])
