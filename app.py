@@ -8,16 +8,19 @@ from decouple import config
 from flask import Flask, render_template, request
 from .predict import predict_user
 from .model import DB, User
-from .twitter import add_or_update_user
+from .twitter import add_or_update_user, update_all_users
 
 if config('ENV') == 'production':
-    CACHE = redis.from_url(os.environ.get("REDIS_URL"))
+    CACHE = redis.Redis(
+        host='localhost',
+        port='6379'
+    )
 else:
     CACHE = None
 
 try:
     CACHE.exists('comparisons')
-    CAHCED_COMPARISONS = loads(CACHE.get)
+    # CAHCED_COMPARISONS = loads(CACHE.get)
 except AttributeError:
     CACHED_COMPARISONs = set()
 
@@ -41,7 +44,7 @@ def create_app():
     def update():
         if config('ENV') == 'production':
             CACHE.flushall()
-            CAHCED_COMPARISONS.clear()
+            # CAHCED_COMPARISONS.clear()
         update_all_users()
         return render_template('base.html', users=User.query.all(),
                                title='Cache cleared and all tweets updated')
