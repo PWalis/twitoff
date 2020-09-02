@@ -10,29 +10,14 @@ from .predict import predict_user
 from .model import DB, User
 from .twitter import add_or_update_user, update_all_users
 
-if config('ENV') == 'production':
-    CACHE = redis.Redis(
-        host='localhost',
-        port='6379'
-    )
-else:
-    CACHE = None
-
-try:
-    CACHE.exists('comparisons')
-    # CAHCED_COMPARISONS = loads(CACHE.get)
-except AttributeError:
-    CACHED_COMPARISONs = set()
 
 def create_app():
     """
     Create  and configure an instance of the Flask application 
     """
     app = Flask(__name__)
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
     app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK-NOTIFICATIONS'] = False
-    # app.config['ENV'] = config('FLASK_ENV')
     DB.init_app(app)
 
     @app.route("/")
@@ -42,12 +27,9 @@ def create_app():
 
     @app.route("/update")
     def update():
-        if config('ENV') == 'production':
-            CACHE.flushall()
-            # CAHCED_COMPARISONS.clear()
         update_all_users()
         return render_template('base.html', users=User.query.all(),
-                               title='Cache cleared and all tweets updated')
+                               title='All tweets updated')
 
     
     @app.route('/user', methods=['POST'])
