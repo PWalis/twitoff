@@ -1,9 +1,6 @@
 """
 main application and routing logic for  TwitOff
 """
-import os
-from pickle import loads, dumps
-import redis
 from decouple import config
 from flask import Flask, render_template, request
 from .predict import predict_user
@@ -31,7 +28,6 @@ def create_app():
         return render_template('base.html', users=User.query.all(),
                                title='All tweets updated')
 
-    
     @app.route('/user', methods=['POST'])
     @app.route('/user/<name>', methods=['GET'])
     def user(name=None):
